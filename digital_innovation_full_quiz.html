@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>數位創新期中考完整練習</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","Segoe UI",Arial,sans-serif;background:#fff7fb;color:#263238}
+header{position:sticky;top:0;z-index:10;background:linear-gradient(90deg,#10b7c7,#ff8ab3);color:#fff;text-align:center;padding:16px 10px;box-shadow:0 3px 12px #0002}
+h1{font-size:21px;margin:0} header p{margin:6px 0 0;font-size:13px;opacity:.95}
+.wrap{max-width:950px;margin:0 auto;padding:12px 12px 80px}
+.bar{background:#fff;border-radius:16px;padding:12px;margin:12px 0;box-shadow:0 3px 12px #0001;display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between;align-items:center}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+button{border:0;border-radius:999px;padding:10px 14px;background:#10b7c7;color:#fff;font-weight:700;cursor:pointer}
+button.pink{background:#ff8ab3} button.gray{background:#78909c} button.green{background:#43a047}
+select{padding:9px;border-radius:999px;border:1px solid #b0bec5;background:#fff;max-width:100%}
+.score{font-weight:800;color:#087783}
+.q{background:#fff;border-radius:16px;padding:14px;margin:12px 0;box-shadow:0 3px 12px #0001;border-left:6px solid #10b7c7}
+.tag{display:inline-block;background:#e0f7fa;color:#007784;border-radius:999px;padding:3px 9px;font-size:12px;font-weight:700;margin-bottom:8px}
+.qt{font-weight:800;line-height:1.55;margin-bottom:10px;font-size:16px}
+.op{display:block;border:1.5px solid #dce7eb;border-radius:12px;padding:10px;margin:7px 0;background:#fbfdff;line-height:1.45;cursor:pointer}
+.op input{margin-right:7px}
+.ans{display:none;margin-top:9px;background:#fff3cd;border-radius:10px;padding:9px;font-weight:800;color:#5d4037}
+.correct{background:#e8f8ef!important;border-color:#22a35a!important}
+.wrong{background:#ffecec!important;border-color:#e74c3c!important}
+.show{display:block}
+.small{font-size:13px;color:#607d8b}
+</style>
+</head>
+<body>
+<header>
+  <h1>數位創新期中考｜完整選擇題練習</h1>
+  <p>含：截圖選擇題＋重點複習簡答轉選擇題</p>
+</header>
+<div class="wrap">
+  <div class="bar">
+    <div>
+      <div id="score" class="score">尚未批改</div>
+      <div id="count" class="small"></div>
+    </div>
+    <select id="catFilter" onchange="render()">
+      <option value="全部">全部題目</option>
+    </select>
+    <div class="btns">
+      <button onclick="check()">批改</button>
+      <button class="pink" onclick="showAns()">顯示答案</button>
+      <button class="green" onclick="shuffleQuestions()">隨機排序</button>
+      <button class="gray" onclick="resetQuiz()">重做</button>
+    </div>
+  </div>
+  <div id="quiz"></div>
+</div>
+<script>
+const allQuestions = [{"cat": "數位轉型與創新類型", "q": "說明企業如何運作的故事是指：", "options": ["商業模式", "競爭策略", "數位創新"], "answer": 0}, {"cat": "數位轉型與創新類型", "q": "成功的策略其核心是商業模式，這個商業模式只有一個問題：", "options": ["我們如何獲取利潤", "競爭領域", "實現方法"], "answer": 0}, {"cat": "數位轉型與創新類型", "q": "意指在各種數位科技逐漸發展成熟，且成本不斷降低的情況，企業透過這些新興科技疊加運用，深刻改變公司當前的經營模式，產生全新數位化的產品服務、營運流程及商業模式，而帶來的新商業機會的過程是指：", "options": ["數位經濟", "商品數位化", "數位轉型"], "answer": 2}, {"cat": "數位轉型與創新類型", "q": "科技改變原有商品型態或是創造出新的商品，讓商品除了本身的價值之外，還具備了數位的價值指的是：", "options": ["數位經濟", "商品數位化", "數位轉型"], "answer": 1}, {"cat": "數位轉型與創新類型", "q": "張忠謀認為最值錢的創新是：", "options": ["商業模式創新", "技術創新", "數位創新"], "answer": 0}, {"cat": "數位轉型與創新類型", "q": "在全球半導體產業中，張忠謀卻憑著一種創新的想法，打造出台積電的商業奇蹟稱之：", "options": ["商業模式創新", "技術創新", "科技創新"], "answer": 0}, {"cat": "數位轉型與創新類型", "q": "把焦點放在技術或商品的重新發明、重新結合，或是找尋新的關聯稱之：", "options": ["技術驅動的數位創新", "商業模式創新", "營運模式的創新"], "answer": 0}, {"cat": "數位轉型與創新類型", "q": "結合技術和商業模式的創新，例如個人化藥品、智慧理財與網路搜尋等是指：", "options": ["破壞式創新", "激進式創新", "結構式創新"], "answer": 2}, {"cat": "數位轉型與創新類型", "q": "數位轉型原則包括：", "options": ["明確定義數位轉型的含義", "有紀律地使用正確的目標和針對這些目標執行的正確流程", "以上皆是"], "answer": 2}, {"cat": "數位轉型與創新類型", "q": "Saldanha 用商業成果來定義數位轉型，其最後的一個階段是指：", "options": ["部分同步", "完全同步", "活著的 DNA"], "answer": 2}, {"cat": "數位轉型與創新類型", "q": "驅動組織以數據為決策核心以及平台化的數位轉型是指：", "options": ["電腦化", "網路化", "數據化"], "answer": 2}, {"cat": "數位轉型與創新類型", "q": "Adobe 數位轉型的關鍵策略在於數據驅動的營運模式包括：", "options": ["數據決策與知識共享機制", "以客戶需求為導向的 KPI 機制", "以上皆是"], "answer": 2}, {"cat": "數位轉型與創新類型", "q": "GE 數位轉型主要犯錯的地方包括：", "options": ["GE Digital 是整合軟體和 IT 資源的創新品牌，但 GE 卻採用管理 GE Software 的方法管理，包括設定目標盈利等傳統方式", "平台商業模式卻成為內部客戶開發平台", "以上皆是"], "answer": 2}, {"cat": "數位轉型與創新類型", "q": "以下敘述何者正確：", "options": ["藉由對於產品與商業模式的創新檢視，更能清楚產品的數位價值與商業模式的價值所在", "在創新分析有營運模式與商業模式的創新，如同張忠謀所說，最賺錢的就是商業模式", "以上皆對"], "answer": 2}, {"cat": "數位經濟與商業模式", "q": "數位經濟一詞自1995年被哪位學者提出後，從過去的互聯網經濟、電子商務、App經濟、平台經濟、API經濟、物聯網經濟、AI經濟、共享經濟？", "options": ["Porter", "Barney", "Tapscott"], "answer": 2}, {"cat": "數位經濟與商業模式", "q": "數位產業（Digital Sector），包括硬體製造、資訊服務、電信、軟體＆IT顧問屬於數位經濟哪一層次的定義？", "options": ["核心部門", "新型態的數位服務", "廣義的數位產業"], "answer": 0}, {"cat": "數位經濟與商業模式", "q": "在新經濟中，數位網路和通訊基礎設施提供了一個全球平台，人們和組織可以在該平台上制定策略，進行交流、協作和搜尋資訊，例如：", "options": ["平台經濟", "共享經濟", "以上皆是"], "answer": 2}, {"cat": "數位經濟與商業模式", "q": "微型支付的概念誕生於互聯網時代，在某些方面與可分割的內容及按使用付費密切相關，以下何者是微型支付的公司？", "options": ["PayPal", "Paytm", "以上皆是"], "answer": 2}, {"cat": "數位經濟與商業模式", "q": "共享汽車的商業模式是按：", "options": ["微型支付", "按使用付費", "訂閱"], "answer": 1}, {"cat": "數位經濟與商業模式", "q": "哪一種商業模式是對客戶的真實需求有更清晰的認識，也成為穩定現金流支付，與按使用量付費的不同是在業務規劃方面：", "options": ["微型支付", "按使用付費", "訂閱"], "answer": 2}, {"cat": "數位經濟與商業模式", "q": "Salesforce、Adobe與Spotify等三家公司皆屬於哪一種商業模式？", "options": ["微型支付", "按使用付費", "訂閱"], "answer": 2}, {"cat": "數位經濟與商業模式", "q": "被認為是訂閱的一種，意味著一種更直接與依賴的關係，是一種歸屬感而不是某種交易，例如客戶忠誠度計畫。稱之為：", "options": ["微型支付", "按使用付費", "會員制"], "answer": 2}, {"cat": "數位經濟與商業模式", "q": "亞馬遜、阿里巴巴與Costco等三家公司皆屬於哪一種商業模式？", "options": ["微型支付", "按使用付費", "會員制"], "answer": 2}, {"cat": "數位經濟與商業模式", "q": "哪一種商業模式是提供專一的服務，然後利用升級的方式吸引客戶，對於客戶而言，可以享受到一般的服務內容與進階的服務內容，帶來不同的體驗感受，通常這種一般服務是沒有時間限制，而是有容量或資格限制。", "options": ["免費增值版／高級增值模式", "按使用付費", "會員制"], "answer": 0}, {"cat": "數位經濟與商業模式", "q": "LinkedIn、Dropbox與Economist等三家公司皆屬於哪一種商業模式？", "options": ["免費增值版／高級增值模式", "按使用付費", "會員制"], "answer": 0}, {"cat": "數位經濟與商業模式", "q": "哪一種商業模式向用戶提供免費內容以及嵌入其中的廣告，相反於高級增值模式，用戶可以享受無廣告內容和其它附加組件以換取收入？", "options": ["免費增值版／高級增值模式", "嵌入式廣告", "會員制"], "answer": 1}, {"cat": "數位經濟與商業模式", "q": "Instagram、YouTube與Facebook等三家公司皆屬於哪一種商業模式？", "options": ["免費增值版／高級增值模式", "嵌入式廣告", "會員制"], "answer": 1}, {"cat": "數位經濟與商業模式", "q": "哪一種商業模式為了激勵用戶的行為、想法、興趣和互動。換句話說，無論是文化、企業、休閒、商業等，在任何類型的環境中都可以娛樂調節行為：", "options": ["遊戲化", "嵌入式廣告", "會員制"], "answer": 0}, {"cat": "數位經濟與商業模式", "q": "Mint、Fortune City與HedgeTrade等三家公司皆屬於哪一種商業模式？", "options": ["遊戲化", "嵌入式廣告", "會員制"], "answer": 0}, {"cat": "數位經濟與商業模式", "q": "群眾募資的執行方式包括：", "options": ["剛性專案", "彈性專案", "以上皆是"], "answer": 2}, {"cat": "數位經濟與商業模式", "q": "Kickstarter、Inkshares與FlyingV等三家公司皆屬於哪一種商業模式？", "options": ["群眾募資", "嵌入式廣告", "會員制"], "answer": 0}, {"cat": "數位經濟與商業模式", "q": "哪一種商業模式也稱為B2C模式，它定義為在沒有中介機構或中間商干預的情況下直接向消費者銷售產品的方式：", "options": ["群眾募資", "直銷", "會員制"], "answer": 1}, {"cat": "數位經濟與商業模式", "q": "Pinterest、Shopify與OReilly等三家公司皆屬於哪一種商業模式？", "options": ["直銷", "嵌入式廣告", "會員制"], "answer": 0}, {"cat": "數位經濟與商業模式", "q": "Coursera、edX與學堂在線等三家公司皆屬於哪一種商業模式？", "options": ["直銷", "開放存取與點對點模課師", "會員制"], "answer": 1}, {"cat": "數位經濟與商業模式", "q": "哪種成本是指組織在對其生產過程做出選擇時所面臨的搜尋成本、協調成本、談判成本和資訊不對稱成本：", "options": ["交易成本", "機會成本", "隱藏成本"], "answer": 0}, {"cat": "數位經濟與商業模式", "q": "下列何者指的是當使用者愈多時，該平台對使用者的效用愈高，以手機作業系統為例，愈多人使用的作業系統，就會有愈多的應用程式供應商加入，就會吸引愈多使用者，出現一個正循環：", "options": ["價值網", "網路外部性", "多棲策略"], "answer": 1}, {"cat": "數位經濟與商業模式", "q": "下列哪一種平台模式指的是一家公司既是平台的經營者，也是贊助者，如蘋果：", "options": ["專有模式", "授權模式", "共用模式"], "answer": 0}, {"cat": "數位經濟與商業模式", "q": "下列哪一種API經濟模式指的是此模型以應用程式開發人員必須為特定API提供的服務付費的形式運行：", "options": ["免費", "開發者付費", "開發者獲得付費"], "answer": 1}, {"cat": "數位經濟與商業模式", "q": "下列哪一種營運模式在這一兩年間，席捲各家企業，從2008年崛起的比特幣與區塊鏈應用，到2017年受到各界矚目的人工智慧應用發展：", "options": ["演算法經濟模式", "API經濟模式", "開放存取"], "answer": 0}, {"cat": "數位經濟與商業模式", "q": "語音助理、智慧駕駛、智慧理財與翻譯皆屬於哪一種商業模式：", "options": ["直銷", "開放存取與點對點模課師", "演算法經濟模式"], "answer": 2}, {"cat": "常見陷阱題補強", "q": "有關開啟數位轉型迷霧，掌握數位經濟邏輯內容敘述下列何者有誤：", "options": ["數位轉型在台灣這些年成為顯學", "數位轉型等同於技術轉型（IT transformation）", "數位轉型需要端到端的重組，使業務流程改善與客戶需求的優先保持一致"], "answer": 1}, {"cat": "常見陷阱題補強", "q": "數位創新需要考量的經濟學因素包括：", "options": ["供給／需求", "市場結構", "以上皆是"], "answer": 2}, {"cat": "常見陷阱題補強", "q": "以下哪一家公司的服務屬於國際行動支付：", "options": ["PayPal", "Apple Pay", "以上皆是"], "answer": 2}, {"cat": "常見陷阱題補強", "q": "與數位經濟相關的經濟理論包括：", "options": ["供給／需求", "交易成本與因果關係", "以上皆是"], "answer": 2}, {"cat": "常見陷阱題補強", "q": "成功解決中小企業與微型企業問題之國際行動支付包括：", "options": ["PayPal", "Apple Pay", "以上皆是"], "answer": 2}, {"cat": "常見陷阱題補強", "q": "以下敘述何者有誤：", "options": ["數位經濟的四個經濟學原理分別是：供給與需求、市場結構、交易成本、因果經濟學", "市場結構就是說明如何創造廠商的競爭優勢，尤其是序列競爭是數位商品市場的一個重要特質", "一個成功的商業模式是不會大部分的資金都投注在藍海策略當中"], "answer": 1}, {"cat": "常見陷阱題補強", "q": "以下敘述何者有誤：", "options": ["交易成本則是源自於North的制度經濟學", "因果關係經濟學是計量經濟學處理的問題", "也就是排除掉許多外生性的因素，才能找出該模式成功的原因"], "answer": 1}, {"cat": "常見陷阱題補強", "q": "有關科技革命塑造傳播位元世界之下列敘述何者有誤：", "options": ["技術革命改變人類的思維模式，也帶來經濟體制與生活模式的改變", "新經濟理論認為，由於經濟全球化和資訊技術進步，導致高度物價膨脹率", "第四次工業革命始於這個世紀之交，是在數位革命的基礎上發展起來的"], "answer": 1}, {"cat": "常見陷阱題補強", "q": "有關科技革命塑造傳播位元世界之下列敘述何者有誤：", "options": ["實際上，工業革命的發展並非線性，它隨著經濟結構不同而產生不同的變化", "網路經濟驅動力是供給面規模經濟－供給聚合，因此造就網路效應", "市場的差異化就是創新的商業模式，他就具備成功的基本條件"], "answer": 2}, {"cat": "常見陷阱題補強", "q": "關突破代工侷限邁向創新思維之下列敘述何者有誤：", "options": ["對台灣而言，我們的主要經濟動力來自於內需服務業", "一項好的數位產品創新，必需能符合人類最原始的本能與需求", "數位科技的創新，需要建立在解決使用者的痛點上"], "answer": 0}, {"cat": "常見陷阱題補強", "q": "為一位創新者需要具備哪兩種能力：", "options": ["看到現有市場不被滿足的需求", "能創造出有明顯的需求與差異化的供給", "以上皆是"], "answer": 2}, {"cat": "常見陷阱題補強", "q": "下列何者是數位創新決策前三個思考點：", "options": ["如何定義你的商品", "你該選擇哪種商業模式", "以上皆是"], "answer": 2}, {"cat": "常見陷阱題補強", "q": "很多人把策略等同於商業模式，這也經常讓人混淆；商業模式說明你的業務如何運作，可能是不同的生產方式、定價方式、銷售方式是指：", "options": ["如何定義你的商品", "發現新的市場", "你該選擇哪種商業模式"], "answer": 0}, {"cat": "常見陷阱題補強", "q": "討論資訊不對稱、搜尋成本與契約成本是指：", "options": ["市場結構", "因果關係", "交易成本"], "answer": 2}, {"cat": "常見陷阱題補強", "q": "科技公司「按顧客所需」或藉由「即時提供」產品與服務以滿足顧客需求的一種經濟活動與服務型態是指：", "options": ["隨需服務", "隨選需求", "隨需經濟"], "answer": 0}, {"cat": "常見陷阱題補強", "q": "不是專注於「產品」或「交易」，而是依靠專注於客戶的能力而生存和死亡；增長的祕訣在於提供多通路的體驗和服務是指：", "options": ["隨需服務", "訂閱經濟", "平台經濟"], "answer": 0}, {"cat": "常見陷阱題補強", "q": "集結生產者和消費者，促進高價值的交換（交易），平台業者的主要資產是資訊和互動，而業者創造的價值和競爭優勢都來自此是指：", "options": ["隨需服務", "訂閱經濟", "平台經濟"], "answer": 2}, {"cat": "常見陷阱題補強", "q": "解決了一般線性企業無法解決的問題，平台不僅降低企業間的雙向合作成本，也降低B2C和C2C之間的雙向合作成本，買賣雙方似乎從未如此方便地聯繫是指：", "options": ["隨需服務", "訂閱經濟", "平台經濟"], "answer": 2}, {"cat": "常見陷阱題補強", "q": "不只是提供更智慧的應用程式，而是提供使開發人員能夠使其程式更智慧的工具，如共享功能的應用程式為開發人員帶來了更多的功能，並在市場上帶來了更多競爭是指：", "options": ["隨需服務", "訂閱經濟", "演算法經濟"], "answer": 2}, {"cat": "重點整理：簡答轉選擇", "q": "商業模式創新的三個層次包括：", "options": ["商業模式創新、營運模式的創新、結構層面的創新", "產品創新、價格創新、通路創新", "供給創新、需求創新、交易創新"], "answer": 0}, {"cat": "重點整理：簡答轉選擇", "q": "商業模式創新包含下列何者？", "options": ["重新定義客戶、創新客戶價值、創新價值網路、產生新的獲利定價模式", "只改善產品外觀", "只降低生產成本"], "answer": 0}, {"cat": "重點整理：簡答轉選擇", "q": "營運模式的創新包括：", "options": ["從產品到營運模式、從交易模式到關係模式", "從內需到外銷、從人力到機器", "從廣告到會員、從訂閱到直銷"], "answer": 0}, {"cat": "重點整理：簡答轉選擇", "q": "結構層面的創新是指：", "options": ["結合技術與商業模式突破，創造出一個全新的市場", "只改變公司組織圖", "只增加銷售人員"], "answer": 0}, {"cat": "重點整理：簡答轉選擇", "q": "四種創新的類型包括：", "options": ["例行性創新、破壞性創新、激進式創新、結構性創新", "商品創新、價格創新、地點創新、促銷創新", "微型支付、訂閱、會員制、廣告"], "answer": 0}, {"cat": "重點整理：簡答轉選擇", "q": "沿用現有的技術與商業模式，例如 BMW 新款車、Pixar 動畫或先鋒集團指數型基金，屬於：", "options": ["例行性創新", "破壞性創新", "結構性創新"], "answer": 0}, {"cat": "重點整理：簡答轉選擇", "q": "利用現有的技術能力，但提出商業模式創新，例如開放原始碼軟體、共乘服務與隨選視訊服務，屬於：", "options": ["例行性創新", "破壞性創新", "激進式創新"], "answer": 1}, {"cat": "重點整理：簡答轉選擇", "q": "運用現有商業模式，投入研發技術創新，例如生物科技、電動車與光纖電纜，屬於：", "options": ["激進式創新", "結構性創新", "破壞性創新"], "answer": 0}, {"cat": "重點整理：簡答轉選擇", "q": "結合技術和商業模式的創新，例如個人化藥品、智慧理財與網路搜尋，屬於：", "options": ["例行性創新", "激進式創新", "結構性創新"], "answer": 2}, {"cat": "重點整理：簡答轉選擇", "q": "數位經濟的三個層次包括：", "options": ["核心部門、新型態的數位服務、廣義的數位產業", "供給、需求、市場結構", "免費、付費、訂閱"], "answer": 0}, {"cat": "重點整理：簡答轉選擇", "q": "數位經濟的核心部門是指：", "options": ["數位產業，包括硬體製造、資訊服務、電信、軟體與IT顧問", "平台經濟、共享經濟、零工經濟", "電子商業、工業4.0、精準農業"], "answer": 0}, {"cat": "重點整理：簡答轉選擇", "q": "新型態的數位服務包括：", "options": ["數位服務、平台經濟、共享經濟與零工經濟", "硬體製造、電信、軟體IT顧問", "精準農業、工業4.0、電子商業"], "answer": 0}, {"cat": "重點整理：簡答轉選擇", "q": "廣義的數位產業包括：", "options": ["電子商業、電子商務、工業4.0、精準農業、演算法經濟", "只包含硬體製造", "只包含電信業"], "answer": 0}, {"cat": "重點整理：簡答轉選擇", "q": "大多數平台需要根據開放程度決定的四個不同功能包括：", "options": ["需求方平台用戶、供應方平台用戶、平台提供商、平台贊助商", "生產者、批發商、零售商、消費者", "主管、員工、顧客、投資人"], "answer": 0}, {"cat": "重點整理：簡答轉選擇", "q": "需求方平台用戶通常是指：", "options": ["終端用戶，也就是一般消費者", "核心平台的應用程式開發人員", "平台的產權擁有者"], "answer": 0}, {"cat": "重點整理：簡答轉選擇", "q": "供應方平台用戶通常是指：", "options": ["資源豐富的應用程式開發人員，為核心平台提供補充", "一般消費者", "平台的主要聯繫點"], "answer": 0}, {"cat": "重點整理：簡答轉選擇", "q": "平台提供商的角色是：", "options": ["作為用戶與平台的主要聯繫點，並提供基礎設施", "具有產權並決定誰可參與平台網路", "只負責購買商品"], "answer": 0}, {"cat": "重點整理：簡答轉選擇", "q": "平台贊助商的角色是：", "options": ["具有產權並負責確認誰可以參與平台介導的網路，並開發技術", "一般消費者", "只負責客服"], "answer": 0}, {"cat": "重點整理：簡答轉選擇", "q": "經營平台的四種模式包括：", "options": ["專有模式、授權模式、合資企業模式、共用模式", "免費模式、付費模式、直銷模式、廣告模式", "剛性專案、彈性專案、募資模式、會員模式"], "answer": 0}, {"cat": "重點整理：簡答轉選擇", "q": "一家公司既是平台的經營者，也是贊助者，如蘋果，屬於：", "options": ["專有模式", "授權模式", "共用模式"], "answer": 0}, {"cat": "重點整理：簡答轉選擇", "q": "平台由一群公司經營，但贊助者只有一家企業，如 Google 或微軟，屬於：", "options": ["專有模式", "授權模式", "合資企業模式"], "answer": 1}, {"cat": "重點整理：簡答轉選擇", "q": "單一公司經營，但由多家公司贊助，如旅遊訂房系統，屬於：", "options": ["授權模式", "合資企業模式", "共用模式"], "answer": 1}, {"cat": "重點整理：簡答轉選擇", "q": "由一群公司經營，另一群公司贊助的平台，如 Linux，屬於：", "options": ["專有模式", "授權模式", "共用模式"], "answer": 2}, {"cat": "重點整理：簡答轉選擇", "q": "AI 的四種運作類型包括：", "options": ["自動化智慧、輔助智慧、擴增智慧、自主性智慧", "資料智慧、平台智慧、交易智慧、商品智慧", "弱AI、強AI、超AI、無AI"], "answer": 0}, {"cat": "重點整理：簡答轉選擇", "q": "人工／認知性作業和例行性／非例行性作業的自動化，屬於 AI 的哪一種運作類型？", "options": ["自動化智慧", "輔助智慧", "自主性智慧"], "answer": 0}, {"cat": "重點整理：簡答轉選擇", "q": "可幫助人類更快速、更完美地完成工作，屬於 AI 的哪一種運作類型？", "options": ["自動化智慧", "輔助智慧", "擴增智慧"], "answer": 1}, {"cat": "重點整理：簡答轉選擇", "q": "幫助人類做出更好的決策，屬於 AI 的哪一種運作類型？", "options": ["輔助智慧", "擴增智慧", "自主性智慧"], "answer": 1}, {"cat": "重點整理：簡答轉選擇", "q": "系統不需人類介入即可自行做決策，屬於 AI 的哪一種運作類型？", "options": ["自動化智慧", "擴增智慧", "自主性智慧"], "answer": 2}];
+let current = [...allQuestions];
+
+function initCats(){
+  const cats=[...new Set(allQuestions.map(q=>q.cat))];
+  const sel=document.getElementById("catFilter");
+  cats.forEach(c=>{
+    const op=document.createElement("option");
+    op.value=c; op.textContent=c;
+    sel.appendChild(op);
+  });
+}
+
+function letter(i){return String.fromCharCode(65+i)}
+
+function render(){
+  const cat=document.getElementById("catFilter").value;
+  current = cat==="全部" ? [...allQuestions] : allQuestions.filter(q=>q.cat===cat);
+  const quiz=document.getElementById("quiz");
+  quiz.innerHTML="";
+  current.forEach((item,i)=>{
+    const div=document.createElement("div");
+    div.className="q";
+    div.innerHTML=`
+      <div class="tag">${item.cat}｜第 ${i+1} 題</div>
+      <div class="qt">${i+1}. ${item.q}</div>
+      ${item.options.map((op,idx)=>`
+        <label class="op" id="q${i}_${idx}">
+          <input type="radio" name="q${i}" value="${idx}">
+          ${letter(idx)}. ${op}
+        </label>`).join("")}
+      <div class="ans" id="ans${i}">答案：${letter(item.answer)}. ${item.options[item.answer]}</div>
+    `;
+    quiz.appendChild(div);
+  });
+  document.getElementById("score").textContent="尚未批改";
+  document.getElementById("count").textContent=`目前題數：${current.length} 題`;
+}
+
+function check(){
+  let c=0;
+  current.forEach((item,i)=>{
+    item.options.forEach((_,idx)=>document.getElementById(`q${i}_${idx}`).classList.remove("correct","wrong"));
+    document.getElementById(`q${i}_${item.answer}`).classList.add("correct");
+    const s=document.querySelector(`input[name="q${i}"]:checked`);
+    if(s){
+      const v=Number(s.value);
+      if(v===item.answer)c++;
+      else document.getElementById(`q${i}_${v}`).classList.add("wrong");
+    }
+    document.getElementById(`ans${i}`).classList.add("show");
+  });
+  document.getElementById("score").textContent=`分數：${c} / ${current.length}`;
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function showAns(){
+  current.forEach((item,i)=>{
+    item.options.forEach((_,idx)=>document.getElementById(`q${i}_${idx}`).classList.remove("wrong"));
+    document.getElementById(`q${i}_${item.answer}`).classList.add("correct");
+    document.getElementById(`ans${i}`).classList.add("show");
+  });
+  document.getElementById("score").textContent=`已顯示答案，共 ${current.length} 題`;
+}
+
+function resetQuiz(){
+  document.querySelectorAll("input[type=radio]").forEach(x=>x.checked=false);
+  document.querySelectorAll(".op").forEach(x=>x.classList.remove("correct","wrong"));
+  document.querySelectorAll(".ans").forEach(x=>x.classList.remove("show"));
+  document.getElementById("score").textContent="尚未批改";
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function shuffleQuestions(){
+  for(let i=current.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [current[i],current[j]]=[current[j],current[i]];
+  }
+  const quiz=document.getElementById("quiz");
+  quiz.innerHTML="";
+  current.forEach((item,i)=>{
+    const div=document.createElement("div");
+    div.className="q";
+    div.innerHTML=`
+      <div class="tag">${item.cat}｜第 ${i+1} 題</div>
+      <div class="qt">${i+1}. ${item.q}</div>
+      ${item.options.map((op,idx)=>`
+        <label class="op" id="q${i}_${idx}">
+          <input type="radio" name="q${i}" value="${idx}">
+          ${letter(idx)}. ${op}
+        </label>`).join("")}
+      <div class="ans" id="ans${i}">答案：${letter(item.answer)}. ${item.options[item.answer]}</div>
+    `;
+    quiz.appendChild(div);
+  });
+  resetQuiz();
+}
+
+initCats();
+render();
+</script>
+</body>
+</html>
