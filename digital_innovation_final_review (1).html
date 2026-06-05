@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>數位創新期末複習系統</title>
+<style>
+:root {
+  --bg:#f7f2ff; --card:#ffffff; --text:#2d2438; --muted:#7b6f88;
+  --primary:#8b5cf6; --primary2:#a78bfa; --good:#16a34a; --bad:#dc2626;
+  --line:#e9ddff; --soft:#f1eaff;
+}
+body.dark {
+  --bg:#15111d; --card:#211a2d; --text:#f6efff; --muted:#c8b9d8;
+  --primary:#c4b5fd; --primary2:#8b5cf6; --line:#3a2d50; --soft:#2c223b;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Microsoft JhengHei",Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.65}
+header{position:sticky;top:0;z-index:10;background:linear-gradient(135deg,var(--primary),var(--primary2));color:white;padding:16px 18px;box-shadow:0 3px 16px rgba(0,0,0,.16)}
+.header-inner{max-width:1180px;margin:auto;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+h1{font-size:24px;margin:0} .sub{font-size:13px;opacity:.95}
+.wrap{max-width:1180px;margin:18px auto;padding:0 14px}
+.tabs{display:flex;gap:8px;overflow:auto;padding:8px 0 14px;position:sticky;top:86px;background:var(--bg);z-index:8}
+.tab{border:1px solid var(--line);background:var(--card);color:var(--text);padding:10px 13px;border-radius:999px;white-space:nowrap;cursor:pointer;font-weight:700}
+.tab.active{background:var(--primary);color:white;border-color:var(--primary)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin:12px 0;box-shadow:0 6px 20px rgba(86,44,140,.08)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media(max-width:720px){.grid{grid-template-columns:1fr}h1{font-size:20px}.tabs{top:94px}}
+@media(min-width:900px){.quiz-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}}
+h2{margin:4px 0 12px} h3{margin:8px 0;color:var(--primary)}
+.page{display:none} .page.active{display:block}
+.pill{display:inline-block;background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:4px 10px;margin:3px;color:var(--text)}
+.question{border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--card);margin:0 0 12px}
+.q-title{font-weight:800;margin-bottom:10px}
+.option{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--soft);color:var(--text);padding:11px 12px;border-radius:12px;margin:8px 0;cursor:pointer;font-size:16px}
+.option:hover{border-color:var(--primary)}
+.option.correct{border-color:var(--good);background:rgba(22,163,74,.12)}
+.option.wrong{border-color:var(--bad);background:rgba(220,38,38,.12)}
+.result{font-weight:800;margin-top:8px;display:none}
+.good{color:var(--good)} .bad{color:var(--bad)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.btn{border:0;background:var(--primary);color:white;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer}
+.btn.secondary{background:var(--soft);color:var(--text);border:1px solid var(--line)}
+details{background:var(--soft);border:1px solid var(--line);border-radius:14px;padding:12px;margin:10px 0}
+summary{cursor:pointer;font-weight:800}
+.scorebox{font-size:18px;font-weight:800}
+.small{font-size:13px;color:var(--muted)}
+.mock-card{max-width:760px;margin:auto}
+.footer{text-align:center;color:var(--muted);padding:22px}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div>
+      <h1>📚 數位創新期末複習系統</h1>
+      <div class="sub">老師簡答題＋第4～10章選擇題＋綜合模擬考</div>
+    </div>
+    <button class="btn secondary" onclick="toggleDark()">🌙 深色模式</button>
+  </div>
+</header>
+<div class="wrap">
+  <div id="tabs" class="tabs"></div>
+  <main id="content"></main>
+</div>
+<div class="footer">考前刷題版｜手機、平板、電腦皆可用</div>
+
+<script>
+const DATA = {"chapters": {"第4章 行動支付": [{"q": "下列何者不是行動支付類型與應用方式？", "opts": ["電信業者", "實體店面", "手機業者", "金融科技"], "ans": 1}, {"q": "下列何者不是支付寶功能？", "opts": ["發唄", "餘額寶", "聲波支付", "Google Pay"], "ans": 3}, {"q": "下列何者不是 M-Pesa 經營模式的特性？", "opts": ["增加資訊不對稱", "降低交易成本", "降低資訊不對稱", "提高金融可得性"], "ans": 0}], "第5章 開放銀行": [{"q": "下列何者不是 API 模式？", "opts": ["私有 API", "合作夥伴 API", "開放 API", "實體 API"], "ans": 3}, {"q": "香港和新加坡主要是哪種 API 模式代表？", "opts": ["私有 API", "合作夥伴 API", "開放 API", "實體 API"], "ans": 2}, {"q": "下列何者不是英國開放銀行實施組織對開放銀行參與者的分類？", "opts": ["實體業者", "帳戶業者", "第三方服務提供者", "技術服務業者"], "ans": 0}], "第6章 演算法與軟技術": [{"q": "下列何者不是影響深遠的演算法？", "opts": ["公鑰加密", "網頁排序", "模式辨識", "平均值"], "ans": 3}, {"q": "下列何者是「華為區塊鏈白皮書」中提到的盲點？", "opts": ["區塊鏈不等同比特幣", "區塊鏈是萬能的", "區塊鏈適合特定應用", "區塊鏈不成熟"], "ans": 1}, {"q": "下列何者不是軟技術？", "opts": ["人文溝通", "策略思考", "人工智慧化", "創造力"], "ans": 2}], "第7章 商業模式": [{"q": "下列何者不是九格畫布的內容？", "opts": ["出資者", "成本結構", "收益來源", "核心資源"], "ans": 0}, {"q": "需求量對價格變化反應的增加或減少的幅度稱之為？", "opts": ["斜性", "深度", "彈性", "鬆性"], "ans": 2}, {"q": "當需求彈性小於 1 時是指？", "opts": ["富於彈性的", "單一彈性", "巨大彈性", "缺乏彈性的"], "ans": 3}], "第8章 競爭優勢": [{"q": "整個市場只有一個賣家供應商品是指？", "opts": ["寡占", "獨占", "獨占性競爭", "完全競爭"], "ans": 1}, {"q": "數位商品市場的特徵是什麼，原因在於數位產品會要求相容性？", "opts": ["獨占", "寡占", "完全競爭", "序列競爭"], "ans": 3}, {"q": "多角化經營能夠創造價值的最主要原因之一是什麼？", "opts": ["範疇經濟", "規模經濟", "彈性經濟", "商品差異化"], "ans": 0}], "第9章 交易成本與制度": [{"q": "Coase 認為交易成本決定是由採取何種治理方式之依據。", "opts": ["廠商", "市場", "(A)及(B)", "以上皆非"], "ans": 2}, {"q": "下列何種不是交易成本？", "opts": ["生產成本", "搜尋成本", "資訊成本", "協商成本"], "ans": 0}, {"q": "下列何種情況之下越難透過市場機能解決經濟問題？", "opts": ["交易成本高", "交易成本低", "與交易成本無關", "以上皆非"], "ans": 0}, {"q": "訂約當事人自己的資訊不對稱是指什麼？", "opts": ["不完全契約問題", "完全契約問題", "代理人理論", "以上皆非"], "ans": 2}, {"q": "訂約當事人與第三方的資訊不對稱是指什麼？", "opts": ["不完全契約問題", "完全契約問題", "代理人理論", "以上皆非"], "ans": 0}, {"q": "商業流程標準化（SOP）與國際認證（ISO）可以降低什麼成本？", "opts": ["生產成本", "搜尋成本", "資訊成本", "協商成本"], "ans": 1}, {"q": "奴隸和主人的契約關係，監督成本如何，奴隸會享有某種自由？", "opts": ["監督成本高", "監督成本低", "與監督成本無關", "以上皆非"], "ans": 0}, {"q": "工作監督成本高的話，採用何種勞工合約比較好？", "opts": ["按件計酬制", "月薪制", "無所謂", "以上皆非"], "ans": 0}, {"q": "North 兩個行為假設是什麼？", "opts": ["效用假設與解讀環境", "動機與解讀環境", "動機與效用假設", "以上皆非"], "ans": 1}, {"q": "動機把個人經濟行為或選擇的理由，賦予什麼的意義？", "opts": ["經濟", "國家", "文化", "價格"], "ans": 2}, {"q": "一個交易成本很高的市場，往往是什麼很嚴重的地方？", "opts": ["市場失靈", "文化素養", "失業", "生產成本失調"], "ans": 0}, {"q": "Madsbjerg 的意義建構（Sensemaking）十分強調什麼？", "opts": ["「認識生產者」這件文化事", "「認識生產者」這件經濟事", "「認識消費者」這件經濟事", "「認識消費者」這件文化事"], "ans": 3}], "第10章 因果推論": [{"q": "因果判斷錯誤是問題弄錯對象，是忽略什麼的影響？", "opts": ["內生性", "外生性", "同質性", "異質性"], "ans": 0}, {"q": "行為學科的理論就是解釋問題的變化是與哪些因的變化有關？", "opts": ["自變數", "應變數", "外生變數", "獨立變數"], "ans": 0}, {"q": "什麼情況會導致參數相關程度的判斷失真？", "opts": ["內生性", "外生性", "同質性", "異質性"], "ans": 3}, {"q": "什麼會導致因果的判斷不正確？", "opts": ["內生性", "外生性", "同質性", "異質性"], "ans": 0}, {"q": "變異數是固定常數是指什麼情況？", "opts": ["內生性", "外生性", "同質性", "異質性"], "ans": 2}, {"q": "統計上的內生性 X（自變數）和 e（殘差）產生相關，是指統計上的什麼情況？", "opts": ["內生性", "外生性", "同質性", "異質性"], "ans": 0}, {"q": "因果關係涉及到複雜的事情時，最好用什麼方式比較好？", "opts": ["事實推論", "反事實推論", "假設有關推論", "假設無關推論"], "ans": 1}]}, "shortAnswers": [{"title": "M-Pesa 經營模式的三個特性", "answers": ["提高金融可得性", "降低交易成本", "降低資訊不對稱"]}, {"title": "企業開發的三種 API 類型", "answers": ["私有 API", "合作夥伴 API", "開放 API"]}, {"title": "香港及新加坡政府鼓勵開放銀行程式介面的五個作法", "answers": ["鼓勵業者自主開放", "頒布時間表", "篩選出候選應用程式介面", "建置 Open API 網站或程式介面註冊庫", "提出 TSP 治理流程建議"]}, {"title": "英國開放銀行實施組織對開放銀行參與者的三種分類", "answers": ["帳號業者", "第三方服務提供者", "技術服務業者"]}, {"title": "國際間金融業 API 開放程度的三種類型平台", "answers": ["完全開放 API 平台", "銀行 API 平台", "挑戰者銀行平台"]}, {"title": "台灣在開放銀行商業模式的策略建議", "answers": ["多邊經營", "價值網與價值鏈的差異", "網路效益", "生態圈經營"]}, {"title": "改變世界的九大演算法", "answers": ["搜尋引擎的索引", "網頁排序", "公鑰加密", "錯誤更正碼", "模式辨識", "資料壓縮", "資料庫", "數位簽章", "如果存在的話，將會很了不起的偉大演算法，並探討電腦能力的極限"]}, {"title": "五件與人的質性有關的事，稱之為軟技術", "answers": ["人文溝通", "創造力", "策略思考", "提問", "築夢"]}, {"title": "形成進入障礙的三個原因", "answers": ["規模經濟", "範疇經濟", "產品差異性形成的進入障礙"]}], "shortQuiz": [{"q": "下列何者不是 M-Pesa 經營模式的三個特性？", "opts": ["提高金融可得性", "降低交易成本", "降低資訊不對稱", "提高政府稅收"], "ans": 3}, {"q": "下列何者屬於 M-Pesa 經營模式的特性？", "opts": ["增加交易成本", "提高金融可得性", "增加資訊不對稱", "降低金融可得性"], "ans": 1}, {"q": "下列何者不是企業開發的 API 類型？", "opts": ["私有 API", "合作夥伴 API", "開放 API", "實體 API"], "ans": 3}, {"q": "企業開發的三種 API 類型包含下列何者？", "opts": ["私有 API", "封閉通路", "實體店面", "現金支付"], "ans": 0}, {"q": "香港及新加坡政府鼓勵開放銀行程式介面的作法不包含？", "opts": ["鼓勵業者自主開放", "頒布時間表", "建置 Open API 網站或程式介面註冊庫", "禁止第三方服務提供者"], "ans": 3}, {"q": "下列何者是香港及新加坡政府鼓勵開放銀行程式介面的作法？", "opts": ["篩選出候選應用程式介面", "取消所有 API", "只允許實體銀行", "禁止資料交換"], "ans": 0}, {"q": "英國開放銀行實施組織對參與者的分類不包含？", "opts": ["帳號業者", "第三方服務提供者", "技術服務業者", "實體店面業者"], "ans": 3}, {"q": "下列何者屬於英國開放銀行參與者分類？", "opts": ["技術服務業者", "便利商店", "手機製造商", "政府窗口"], "ans": 0}, {"q": "國際間金融業 API 開放程度的三種類型平台不包含？", "opts": ["完全開放 API 平台", "銀行 API 平台", "挑戰者銀行平台", "實體店面平台"], "ans": 3}, {"q": "下列何者屬於 API 開放程度的平台類型？", "opts": ["銀行 API 平台", "封閉紙本平台", "電話客服平台", "現金交易平台"], "ans": 0}, {"q": "台灣在開放銀行商業模式的策略建議不包含？", "opts": ["多邊經營", "網路效益", "生態圈經營", "單邊封閉經營"], "ans": 3}, {"q": "台灣開放銀行商業模式策略建議中，強調平台互動效果的是？", "opts": ["網路效益", "生產成本", "實體門市", "現金折扣"], "ans": 0}, {"q": "下列何者不是改變世界的九大演算法？", "opts": ["網頁排序", "公鑰加密", "資料壓縮", "平均值"], "ans": 3}, {"q": "下列何者屬於改變世界的九大演算法？", "opts": ["數位簽章", "價格折扣", "市場調查", "實體店面"], "ans": 0}, {"q": "下列何者不是軟技術？", "opts": ["人文溝通", "創造力", "策略思考", "人工智慧化"], "ans": 3}, {"q": "五件與人的質性有關的事稱為什麼？", "opts": ["軟技術", "硬體設備", "資料庫", "支付工具"], "ans": 0}, {"q": "形成進入障礙的原因不包含？", "opts": ["規模經濟", "範疇經濟", "產品差異性", "完全沒有差異"], "ans": 3}, {"q": "下列何者是形成進入障礙的原因？", "opts": ["產品差異性", "消除規模經濟", "取消範疇經濟", "降低所有門檻"], "ans": 0}]};
+
+let stats = {correct:0, wrong:0};
+let mockQuestions = [];
+let mockIndex = 0;
+let mockScore = 0;
+
+const pages = [
+  ["home","🏠 必考重點"],
+  ["short","📝 老師簡答題"],
+  ["shortQuiz","🎯 簡答變選擇"],
+  ...Object.keys(DATA.chapters).map((c,i)=>["ch"+i,"📖 "+c]),
+  ["mock","🎲 綜合模擬考"],
+  ["score","📊 成績"]
+];
+
+function init(){
+  const tabs = document.getElementById("tabs");
+  tabs.innerHTML = pages.map(p=>`<button class="tab" id="tab-${p[0]}" onclick="showPage('${p[0]}')">${p[1]}</button>`).join("");
+  showPage("home");
+}
+
+function toggleDark(){ document.body.classList.toggle("dark"); }
+
+function showPage(id){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  const tab = document.getElementById("tab-"+id); if(tab) tab.classList.add("active");
+  const content = document.getElementById("content");
+  if(id==="home") content.innerHTML = renderHome();
+  else if(id==="short") content.innerHTML = renderShort();
+  else if(id==="shortQuiz") content.innerHTML = renderQuiz(DATA.shortQuiz, "shortQuiz");
+  else if(id.startsWith("ch")){
+    const idx = parseInt(id.replace("ch",""));
+    const key = Object.keys(DATA.chapters)[idx];
+    content.innerHTML = renderQuiz(DATA.chapters[key], id, key);
+  }
+  else if(id==="mock"){ startMock(); return; }
+  else if(id==="score") content.innerHTML = renderScore();
+}
+
+function renderHome(){
+  return `<section class="card">
+    <h2>🏠 必考重點</h2>
+    <p>考前 5 分鐘先看這裡，都是老師給的簡答題主題。</p>
+    <div class="grid">
+      ${DATA.shortAnswers.map(s=>`<div class="card"><h3>${s.title}</h3>${s.answers.map(a=>`<span class="pill">${a}</span>`).join("")}</div>`).join("")}
+    </div>
+  </section>`;
+}
+
+function renderShort(){
+  return `<section class="card">
+    <h2>📝 老師簡答題背誦</h2>
+    <p class="small">點開題目就可以看答案。</p>
+    ${DATA.shortAnswers.map((s,i)=>`<details><summary>${i+1}. ${s.title}</summary><ol>${s.answers.map(a=>`<li>${a}</li>`).join("")}</ol></details>`).join("")}
+  </section>`;
+}
+
+function renderQuiz(list, scope, title=""){
+  return `<section class="card">
+    <h2>${title || "老師簡答題 → 選擇題"}</h2>
+    <div class="toolbar">
+      <button class="btn secondary" onclick="resetQuiz('${scope}')">重新作答本頁</button>
+      <span class="small">答完會立即顯示正確答案</span>
+    </div>
+    <div class="quiz-list">
+    ${list.map((q,i)=>renderQuestion(q,i,scope)).join("")}
+    </div>
+  </section>`;
+}
+
+function renderQuestion(q,i,scope){
+  const letters=["A","B","C","D"];
+  return `<div class="question" data-scope="${scope}">
+    <div class="q-title">${i+1}. ${q.q}</div>
+    ${q.opts.map((o,idx)=>`<button class="option" onclick="answer(this, ${idx}, ${q.ans})">${letters[idx]}. ${o}</button>`).join("")}
+    <div class="result"></div>
+  </div>`;
+}
+
+function answer(btn, chosen, ans){
+  const box = btn.closest(".question");
+  if(box.dataset.done==="1") return;
+  box.dataset.done="1";
+  const opts = [...box.querySelectorAll(".option")];
+  opts.forEach((b,i)=>{ if(i===ans) b.classList.add("correct"); });
+  const r = box.querySelector(".result");
+  if(chosen===ans){
+    btn.classList.add("correct"); r.innerHTML="✅ 正確"; r.className="result good"; stats.correct++;
+  } else {
+    btn.classList.add("wrong"); r.innerHTML="❌ 答錯，正確答案是："+opts[ans].innerText; r.className="result bad"; stats.wrong++;
+  }
+  r.style.display="block";
+}
+
+function resetQuiz(scope){
+  document.querySelectorAll(`[data-scope="${scope}"]`).forEach(box=>{
+    box.dataset.done="";
+    box.querySelectorAll(".option").forEach(o=>o.classList.remove("correct","wrong"));
+    const r=box.querySelector(".result"); r.style.display="none"; r.innerHTML="";
+  });
+}
+
+function allQuestions(){
+  return [...DATA.shortQuiz, ...Object.values(DATA.chapters).flat()];
+}
+function shuffle(arr){ return arr.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]); }
+
+function startMock(){
+  mockQuestions = shuffle(allQuestions());
+  mockIndex = 0; mockScore = 0;
+  renderMock();
+}
+
+function renderMock(){
+  const content = document.getElementById("content");
+  if(mockIndex >= mockQuestions.length){
+    const rate = Math.round(mockScore / mockQuestions.length * 100);
+    content.innerHTML = `<section class="card mock-card"><h2>🎉 模擬考完成</h2>
+    <p class="scorebox">答對：${mockScore} / ${mockQuestions.length}</p>
+    <p class="scorebox">正確率：${rate}%</p>
+    <button class="btn" onclick="startMock()">再考一次</button></section>`;
+    return;
+  }
+  const q = mockQuestions[mockIndex];
+  content.innerHTML = `<section class="card mock-card">
+    <h2>🎲 綜合模擬考</h2>
+    <p class="small">第 ${mockIndex+1} / ${mockQuestions.length} 題</p>
+    ${renderQuestion(q, mockIndex, "mockOne")}
+    <div class="toolbar"><button class="btn" id="nextMock" style="display:none" onclick="mockIndex++;renderMock()">下一題</button></div>
+  </section>`;
+}
+
+document.addEventListener("click", function(e){
+  if(e.target.classList.contains("option")){
+    const qbox = e.target.closest(".question");
+    if(qbox && qbox.dataset.scope==="mockOne"){
+      const opts=[...qbox.querySelectorAll(".option")];
+      const chosen=opts.indexOf(e.target);
+      const correct=opts.findIndex(o=>o.classList.contains("correct"));
+      if(chosen===correct) mockScore++;
+      const next=document.getElementById("nextMock"); if(next) next.style.display="inline-block";
+    }
+  }
+}, true);
+
+function renderScore(){
+  const total = stats.correct + stats.wrong;
+  const rate = total ? Math.round(stats.correct / total * 100) : 0;
+  return `<section class="card">
+    <h2>📊 成績統計</h2>
+    <p class="scorebox">目前答對：${stats.correct}</p>
+    <p class="scorebox">目前答錯：${stats.wrong}</p>
+    <p class="scorebox">正確率：${rate}%</p>
+    <button class="btn secondary" onclick="stats={correct:0,wrong:0};showPage('score')">清除統計</button>
+  </section>`;
+}
+
+init();
+</script>
+</body>
+</html>
